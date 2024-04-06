@@ -109,8 +109,10 @@ services:
   quickstatements:
     image: "${QUICKSTATEMENTS_IMAGE_NAME}"
     restart: unless-stopped
+    command: [ "/entrypoint_with_db.sh" ]
     volumes:
       - quickstatements-data:/quickstatements/data
+      - ./quickstatements/entrypoint_with_db.sh:/entrypoint_with_db.sh
     ports:
       - "${QUICKSTATEMENTS_PORT}:80"
     depends_on:
@@ -131,6 +133,25 @@ services:
       - OAUTH_CONSUMER_SECRET
       # This can be removed on release of WMDE15 to example
       - WIKIBASE_SCHEME_AND_HOST=http://${WIKIBASE_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+
+  quickstatements-mysql:
+    image: mysql:8
+    command: --sql-mode=""
+    restart: unless-stopped
+    volumes:
+      - quickstatements-mysql-data:/var/lib/mysql
+      - ./quickstatements/create_quickstatements_p.sh:/docker-entrypoint-initdb.d/create_quickstatements_p.sh
+      - ./quickstatements/create_quickstatements_auth.sh:/docker-entrypoint-initdb.d/create_quickstatements_auth.sh
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+    networks:
+      default:
+        aliases:
+          - tools.labsdb
 
 volumes:
   LocalSettings:
@@ -138,3 +159,4 @@ volumes:
   elasticsearch-data:
   quickstatements-data:
   mediawiki-mysql-data:
+  quickstatements-mysql-data:

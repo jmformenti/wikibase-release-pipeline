@@ -65,3 +65,19 @@ There are also additional environment variables passed into Wikibase to configur
 MW_ELASTIC_HOST: ${MW_ELASTIC_HOST}
 MW_ELASTIC_PORT: ${MW_ELASTIC_PORT}
 ```
+
+## Running Quickstatements batches
+
+To run batches in the background, follow these steps:
+
+1. Import data from the UI using the "Run in background" button (just one statement is sufficient).
+2. Go to your user profile and copy the generated token.
+3. Use that token to import data via the command line:
+```
+curl http://localhost:8840/api.php -d action=import -d submit=1 -d format=v1 -d username=<your-user> -d "batchname=<your-batch-name>" --data-raw 'token=<your-token>' --data-urlencode data@<file-to-import>
+```
+4. Schedule the batch job to import all the generated batches, for example, using crontab:
+```
+crontab quickstatements/crontabs.txt
+```
+
